@@ -9,7 +9,7 @@ Allow a team member to recreate the development environment from a clean clone, 
 ## Before setup
 
 - Confirm the repository and branch are correct.
-- Read `README.md`, `AGENTS.md`, and the approved technical ADRs (0001–0004).
+- Read `README.md`, `AGENTS.md`, and review the proposed technical ADRs (0001–0004), checking their approval status before relying on them.
 - Install a supported Node.js LTS version and **npm** (package manager per ADR 0001; lockfile committed).
 - Install Git. Install Supabase CLI and a Docker-compatible runtime only if using Supabase local development.
 - Use a local `.env.local` ignored by Git. Never paste keys into code or prompts.
