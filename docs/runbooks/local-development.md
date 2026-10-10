@@ -1,6 +1,6 @@
 # Runbook: Local Development Setup
 
-**Status:** Proposed workflow with proposed commands; verify and finalize during framework bootstrap (see ADR 0001/0004). Commands below are marked proposed until they have actually been run from a clean clone.
+**Status:** Core commands below were verified during the website bootstrap (lint, format:check, typecheck, test, build, dev, npm ci). Supabase and E2E commands remain **proposed** until the database/playwright tasks are completed.
 
 ## Goal
 
@@ -14,19 +14,20 @@ Allow a team member to recreate the development environment from a clean clone, 
 - Install Git. Install Supabase CLI and a Docker-compatible runtime only if using Supabase local development.
 - Use a local `.env.local` ignored by Git. Never paste keys into code or prompts.
 
-## Proposed setup sequence
+## Setup sequence
 
-All commands are **proposed** until verified at bootstrap; replace this list with verified commands in the same change that bootstraps the app.
+Verified commands are used where the bootstrap task ran them; Supabase steps stay proposed until that task is done.
 
 1. Clone the repository and inspect `git status`.
-2. Install dependencies: `npm ci` (from the committed `package-lock.json`).
-3. Copy `.env.example` to `.env.local` (`copy .env.example .env.local` on Windows, `cp .env.example .env.local` elsewhere) and supply only local/test values.
-4. Start the isolated local database (Supabase CLI, proposed): `npx supabase start`.
-5. Apply migrations and synthetic seed (proposed): `npx supabase db reset`.
-6. Run checks (proposed): `npm run lint`, `npm run typecheck`, `npm run test`.
-7. Start the development server (proposed): `npm run dev`, then open the printed local URL.
-8. Follow the first critical journey in the browser (`11-testing-and-acceptance.md` P0 E2E list).
-9. Confirm sign-in, protected route denial, empty-state behavior, demo-data labels, and AI-provider failure fallback (mocked provider by default).
+2. Install dependencies: `npm ci` (from the committed `package-lock.json`) — **verified**.
+3. Copy `.env.example` to `.env.local` (`copy .env.example .env.local` on Windows, `cp .env.example .env.local` elsewhere) and supply only local/test values — **verified pattern**; do not commit `.env.local`.
+4. Start the isolated local database (Supabase CLI, **proposed**): `npx supabase start`.
+5. Apply migrations and synthetic seed (**proposed**): `npx supabase db reset`.
+6. Run checks — **verified**: `npm run lint`, `npm run format:check`, `npm run typecheck`, `npm run test`.
+7. Production build check — **verified**: `npm run build`.
+8. Start the development server — **verified**: `npm run dev`, then open the printed local URL (default `http://localhost:3000`).
+9. Follow the first critical journey in the browser (`11-testing-and-acceptance.md` P0 E2E list — Playwright suite still **proposed**).
+10. Confirm sign-in, protected route denial, empty-state behavior, demo-data labels, and AI-provider failure fallback (mocked provider by default) — these run only once auth/supabase/AI tasks land.
 
 ## Environment variable rules
 
@@ -40,15 +41,16 @@ All commands are **proposed** until verified at bootstrap; replace this list wit
 
 - Use synthetic students, cohorts, timetables and records clearly labelled as demo (`dataOrigin = synthetic_demo`).
 - No real attendance, marks, personal documents or sensitive mentor/grievance notes in seed files.
-- Reset only a disposable local database using the documented command (`npx supabase db reset` proposed) after confirming the target environment.
+- Reset only a disposable local database using the documented command (`npx supabase db reset`, still proposed) after confirming the target environment.
 
 ## Before committing
 
 - Review `git status` and `git diff`.
 - Check for `.env` files, credentials, personal exports, build output and debug logs.
-- Run relevant checks separately (Windows PowerShell 5.1 does not support `&&`; run each command on its own line, or use PowerShell 7+/cmd for chaining):
+- Run relevant checks separately (Windows PowerShell 5.1 does not support `&&`; run each command on its own line, or use PowerShell 7+/cmd for chaining) — all verified at bootstrap:
   ```powershell
   npm run lint
+  npm run format:check
   npm run typecheck
   npm run test
   ```
@@ -62,6 +64,7 @@ All commands are **proposed** until verified at bootstrap; replace this list wit
 - If AI provider fails, verify safe configuration/quotas and test fallback; do not expose API keys in client logs.
 - If a route leaks data, block further testing with real/sensitive data until authorization tests prove the fix.
 
-## TODO after bootstrap
+## Remaining TODOs
 
-Replace every “proposed” command above with the exact verified command and pinned tool versions produced during bootstrap, in the same commit that introduces the application. Update `11-testing-and-acceptance.md` §7 CI commands to match.
+- Supabase local steps (`npx supabase start` / `db reset`) stay **proposed** until the database integration task; update this runbook there.
+- Playwright E2E and integration-test commands stay **proposed** until those tasks add the suites; keep `11-testing-and-acceptance.md` §7 in sync in the same change.
