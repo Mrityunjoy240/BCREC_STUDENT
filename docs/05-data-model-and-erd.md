@@ -28,22 +28,22 @@
 - `course_catalog`: reusable subject/course definitions.
 - `course_offerings`: an actual subject delivered to a cohort/term by assigned faculty; distinct from self-study courses.
 - `course_enrolments`: student-to-offering relationship.
-- `policy_documents`: approved source, version, effective date, applicability, verification and reviewer.
-- `policy_rules`: structured, typed rules only after human validation; store rule type, expression/parameters, policy document, validity interval and applicability.
+- `policy_documents`: approved source, version, effective date, applicability, reviewer, and the canonical provenance fields (`dataOrigin`, `sourceVerification`, `contentReview`, `freshnessStatus` — see `06-data-sources-and-academic-rules.md` §9).
+- `policy_rules`: structured, typed rules only after human validation; store rule type, expression/parameters, policy document, validity interval and applicability. Rule-engine activation additionally requires `contentReview = approved_for_rule_engine` per §9.5 of doc 06.
 
 ### Schedule, work, assessments
 - `timetable_events`: class/lab/exam/event occurrence, source, course offering, start/end/location, status and last-updated timestamp.
 - `attendance_sessions`: the class/practical session and its source.
-- `attendance_records`: student, session, recorded status, record source, correction/version metadata and last-observed timestamp.
+- `attendance_records`: student, session, recorded status, record source, correction/version metadata and last-observed timestamp; carries the four canonical provenance fields. Read-only in P0 demo; write/correction APIs deferred until an authorized correction owner is confirmed.
 - `assignments`: creator, course offering, instructions, due date, submission channel and status.
 - `assignment_submissions`: student, assignment, file/URL, submitted time, receipt/reference, evaluation status.
 - `assessment_components`: type/name/max score/weighting with applicable rules/version.
-- `assessment_results`: student, component, score/status, source and audit metadata.
+- `assessment_results`: student, component, score/status, source, canonical provenance fields and audit metadata; write APIs deferred pending an authorized correction owner.
 - `exam_events`: published examination date/session and notice reference.
 - `result_records`: authoritative result values and publication provenance; never inferred by the model.
 
 ### Notices, tasks and notifications
-- `notices`: title, original text/file/link, source, published/issued/imported dates, applicability, verification state and reviewer.
+- `notices`: title, original text/file/link, source, published/issued/imported dates, applicability, the four canonical provenance fields and reviewer.
 - `tasks`: task owner, type (`personal`, `teacher`, `official_notice`, `ai_suggested`), deadline, status, source link, confirmation state.
 - `reminder_preferences` and `notification_events`: channel preference, scheduling/delivery state, minimal payload and failure metadata.
 
@@ -101,6 +101,7 @@ erDiagram
 - Attendance percentages are computed from valid, non-duplicated session records and shown with numerator/denominator; zero denominator is “not available,” not 0%.
 - All timestamps use a consistent storage policy; due-date semantics distinguish date-only deadlines from precise instants.
 - A student's academic regulation must be resolved from effective-dated cohort/programme/term data, never from client input alone.
+- Policy-sensitive rows carry the four canonical provenance fields (`dataOrigin`, `sourceVerification`, `contentReview`, `freshnessStatus`) defined in `06-data-sources-and-academic-rules.md` §9; do not invent alternate enums per table.
 - Foreign key and unique constraints protect assignment ownership and duplicate submission/attendance rows where the business rule requires it.
 - Status values are constrained enums or lookup tables; transitions are validated server-side.
 

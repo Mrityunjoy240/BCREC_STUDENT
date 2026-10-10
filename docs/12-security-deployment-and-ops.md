@@ -1,7 +1,7 @@
 # Security, Deployment, and Operations
 
 **Status:** Initial control plan; production launch requires review  
-**Date:** 2026-10-10
+**Date:** 2026-10-10 · **Revision:** 0.2 (synthetic-data isolation; hosting gate per ADR 0004)
 
 ## 1. Security objective
 
@@ -54,16 +54,20 @@ Notifications should show minimum necessary content; sensitive ticket details sh
 
 ## 7. Deployment environments
 
+Deployment target and the production gate are defined in **ADR 0004** (`docs/adr/0004-hosting-and-deployment.md`). Environment data-mode rules mirror `07` §8.
+
 ### Local
-- Synthetic seed data only.
+- Synthetic seed data only (`dataOrigin = synthetic_demo`); demo labels required in UI.
 - Local/test provider keys with limited quotas.
 - Repeatable migration/seed flow.
+- `APP_DATA_MODE=demo` (name provisional).
 
 ### Preview/staging
 - Isolated database and storage.
 - No real student data without explicit authorization and controls.
 - Protected preview access and separate credentials.
 - Test migrations and workflows before release.
+- Default `APP_DATA_MODE=demo`; any authorized test data is explicitly labelled, never silent.
 
 ### Production
 - HTTPS and secure cookie/session configuration.
@@ -71,6 +75,14 @@ Notifications should show minimum necessary content; sensitive ticket details sh
 - Protected branches and CI checks.
 - Database backups, restore test, monitoring, security contact, source-owner contact, and migration/recovery plan.
 - No uncontrolled public enrollment to privileged staff roles.
+- `APP_DATA_MODE=production`: the server never returns synthetic academic records; missing authoritative data yields an explicit unavailable state (see `07` §8, `01` §6). Seed tooling refuses synthetic academic seeds.
+- Production deployment requires the completed security/privacy/operational review checklist in ADR 0004; until then, deploys target local and preview only.
+
+### Synthetic-data isolation controls
+- Provenance: every policy-sensitive row carries `dataOrigin`; synthetic rows are visibly labelled in every environment that serves them.
+- Enforcement: server-side data-mode gate + database constraints/policies; a browser flag cannot enable synthetic data in production.
+- Mixing check: release checklist includes a query confirming zero `synthetic_demo` academic rows are reachable by production sessions.
+- Incident path: if synthetic data is discovered in a production session, treat as SEV-2 per `incident-recovery.md`; label/suppress and fix the data-mode guard.
 
 ## 8. Migration and backup runbook requirements
 
@@ -105,11 +117,14 @@ On suspected data leak or credential compromise:
 - [ ] Backup/restore procedure tested.
 - [ ] Logs redact sensitive fields.
 - [ ] AI tool permissions and GenUI schemas reviewed.
+- [ ] Zero `synthetic_demo` academic rows reachable in production mode; demo labels verified in demo mode.
 - [ ] Accessibility and critical flows tested.
 - [ ] Rollback/incident owner identified.
+- [ ] ADR 0004 production gate (security, privacy, operational review) signed off.
 
 ## 11. References
 
+- `docs/adr/0004-hosting-and-deployment.md` — hosting decision and production gate
 - [Supabase local development workflows](https://supabase.com/docs/guides/local-development/cli-workflows)
 - [OWASP GenAI / LLM Top 10](https://owasp.github.io/www-project-top-10-for-large-language-model-applications/)
 - [Next.js security considerations for Server Functions](https://nextjs.org/docs/app/api-reference/directives/use-server)

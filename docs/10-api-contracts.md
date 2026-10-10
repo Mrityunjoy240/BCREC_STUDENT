@@ -48,30 +48,36 @@ Suggested HTTP semantics:
 
 The preferred Next.js implementation may use route handlers/server actions as appropriate, but each operation must have a server-side service implementation reusable by the future app.
 
-| Domain | Candidate operation | Access/notes |
+| Domain | Candidate operation | Access/notes (see `08-roles-and-permissions.md` §3) |
 |---|---|---|
 | Session/profile | Get own profile/context | Authenticated; role and cohort from trusted mapping |
-| Dashboard | Get dashboard summary | Authenticated; aggregates only permitted records; includes source state |
+| Dashboard | Get dashboard summary | Authenticated; aggregates only permitted records; includes canonical provenance fields |
 | Calendar | List permitted events by range | Authenticated; separate official vs personal vs suggestion |
 | Tasks | List/create/update/complete personal task | Ownership and valid state transition; idempotent where needed |
-| Notices | List visible notices; get detail | Filter by role/cohort applicability; source and review status |
+| Notices | List visible notices; get detail | Filter by role/cohort applicability; four provenance fields and content review status |
 | Learning documents | Upload/initiate, status, list, delete | Ownership, file validation, private storage and retention |
 | AI chat | Send message, list own conversations, fetch own artifact | Rate/cost limiting; authorized retrieval; tool audit |
 | GenUI action | Validate/confirm allowed proposal | Strict schema, current permissions, user confirmation and idempotency |
-| Academic summary | Get attendance/marks/results where connected | Only authoritative available records; data freshness/provenance included |
-| Support | Create/list own ticket, permitted staff transitions | Minimize sensitive data; ticket-specific authorization |
-| Notifications | Read, acknowledge, update preference | Avoid sensitive content in delivery payloads |
+| Academic summary | Get attendance/marks/results where connected | **P0: read-only.** Only authoritative or clearly labelled synthetic records; provenance included; write/correction endpoints deferred per `08` §8 |
+| Support | Create/list own ticket, permitted staff transitions | **P1** (ticket features deferred, `01` §4). Minimize sensitive data; ticket-specific authorization |
+| Notifications | Read, acknowledge, update preference | **P0: preference read/update only.** In-app delivery, email, and server-managed/push notifications are **P1** (`01` §4). Avoid sensitive content in delivery payloads |
+| Audit | Read permitted audit metadata/own receipts | Auditor, policy approver, and scoped staff per `08` §3.1; no client-side audit writes |
+
+**Not exposed in P0** (deferred per `08` §8 until a correction owner is confirmed): attendance-correction write, marks/result change, academic policy rule approval, bulk staff import tools, and any endpoint that edits institutional academic records. Do not implement “temporary” versions of these routes.
 
 ## 5. Data-quality metadata
 
-For policy-sensitive values, use fields equivalent to:
+For policy-sensitive values, every response uses the canonical provenance fields defined in `06-data-sources-and-academic-rules.md` §9:
 - `sourceId` or `sourceUrl` where safe.
-- `sourceType` and `verificationState`.
+- `dataOrigin` — `official_source` | `authorized_import` | `staff_curated` | `student_input` | `ai_generated` | `synthetic_demo`.
+- `sourceVerification` — `unverified` | `verified` | `conflicting` | `rejected`.
+- `contentReview` — `unreviewed` | `reviewed` | `approved_for_display` | `approved_for_rule_engine` | `rejected` | `superseded`.
+- `freshnessStatus` — `current` | `stale` | `unavailable` | `unknown`.
 - `observedAt`/`lastVerifiedAt`.
 - `applicability` or a resolvable policy version.
 - `isAdvisory` for predictive/risk output.
 
-If source state is `unverified`, `conflicting`, `unavailable`, or `synthetic_demo`, caller must not present the value as authoritative.
+Do not invent alternate enums; combined shorthands (e.g. `verified_current`) are derived presentation values only, per §9.6 of doc 06. If `sourceVerification` is `unverified`/`conflicting`, `freshnessStatus` is `unavailable`, or `dataOrigin` is `synthetic_demo`, the caller must not present the value as authoritative; production sessions must not receive `synthetic_demo` academic records at all (see `07` §8 and `12` §7).
 
 ## 6. Mutation safeguards
 

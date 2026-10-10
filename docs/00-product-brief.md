@@ -1,7 +1,7 @@
 # Product Brief — BCREC Student Life Platform
 
 **Status:** Draft for owner review  
-**Version:** 0.1  
+**Version:** 0.2  
 **Date:** 2026-10-10  
 **Product sequence:** Student Website first; essential Student Mobile App later
 
@@ -65,6 +65,8 @@ The exact authority and duties of each role must be confirmed with current BCREC
 - Bounded Generative UI components in the assistant conversation.
 - Role-aware staff workflows as needed to create/verify the data students see.
 
+Release sequencing within this direction (P0 demo → P1 → future) is defined in `docs/01-prd-and-mvp-scope.md`; items above may ship after the first demo.
+
 ### Not assumed in the initial release
 - Direct integration with BCREC ERP, EMS, MAKAUT portals, attendance devices, fee gateway, or placement software.
 - Automated official eligibility/promotion decisions.
@@ -104,12 +106,14 @@ The following are proposed measures, not promised outcomes. Establish baselines 
 
 ## 10. Decisions required from the owner
 
-- Which programme and admission batches are included in the pilot?
-- Which staff member(s) can authorize policy documents and correction of academic records?
-- Which official data sources/API credentials, if any, are actually available?
-- Is the initial pilot demonstration-only, a closed college pilot, or institution-approved production?
-- Which languages are required at launch (English only, or English + Bengali/Hindi)?
-- Which notification channel is allowed and operational (in-app, email, web push, later mobile push)?
+Proposed defaults are recorded in `01-prd-and-mvp-scope.md` §1.1; they are **pending approval**, not authorizations:
+
+- Which programme and admission batches are included in the pilot? *(proposed: synthetic cohort only for the first demo)*
+- Which staff member(s) can authorize policy documents and correction of academic records? *(unresolved; writes stay deferred — `08` §8)*
+- Which official data sources/API credentials, if any, are actually available? *(none assumed)*
+- Is the initial pilot demonstration-only, a closed college pilot, or institution-approved production? *(proposed: local development/demo with labelled synthetic data first)*
+- Which languages are required at launch (English only, or English + Bengali/Hindi)? *(proposed: English UI first; AI layer designed for EN/BN/HI pending evaluation)*
+- Which notification channel is allowed and operational (in-app, email, web push, later mobile push)? *(in-app first; others pending)*
 
 ## 11. Review gate
 

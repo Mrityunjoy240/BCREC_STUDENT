@@ -67,7 +67,7 @@ When a new source is added:
 1. Prefer official institution/provider documentation.
 2. Record title, URL, date accessed, publication/effective date if known, and the decision it supports.
 3. Separate direct source facts from our design inference.
-4. For college rules, record programme/cohort applicability and approval state.
+4. For college rules, record programme/cohort applicability and the canonical provenance fields from `06-data-sources-and-academic-rules.md` §9 (`dataOrigin`, `sourceVerification`, `contentReview`, `freshnessStatus`).
 5. Re-check time-sensitive sources before release and on policy changes.
 
 This register must be updated when architecture changes or a current institutional rule is formally confirmed.
