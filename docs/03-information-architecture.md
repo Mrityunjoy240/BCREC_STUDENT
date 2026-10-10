@@ -31,7 +31,7 @@ In the P0 build, items 7–8 are either omitted or represented by a non-link “
 
 ## 3. Route structure
 
-### P0 routes (implemented)
+### P0 routes (planned for the first demo)
 
 Public/auth:
 - `/` — landing/product entry (final public-vs-authenticated behavior to decide)

@@ -60,7 +60,7 @@ Do not claim a command or test passed unless it actually ran and passed.
 
 ## 7. Frontend and design system
 
-- Use the approved design tokens and shared components (`docs/04-design-system.md` — concrete provisional values). Avoid arbitrary one-off colors, spacing, shadows, and duplicate primitives.
+- Use the provisional design tokens proposed for owner approval and shared components (`docs/04-design-system.md` — concrete provisional values). Avoid arbitrary one-off colors, spacing, shadows, and duplicate primitives.
 - Design loading, empty, error, offline/timeout, stale-data, unavailable/not-connected, demo-data-label, and success states—not only the happy path.
 - Build responsive layouts, semantic HTML, keyboard access, visible focus, labels, and accessible contrast.
 - Prefer server-rendered/data-fetching components where suitable; use client-side interactivity only where needed.
