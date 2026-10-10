@@ -1,6 +1,15 @@
-const demoMode = process.env.APP_DATA_MODE !== "production";
+import { connection } from "next/server";
+import { isDemoMode } from "@/lib/app-mode";
 
-export default function HomePage() {
+// APP_DATA_MODE is a server-side runtime setting. With cacheComponents, a route
+// that must block on the incoming request opts out of instant-shell validation
+// (Next.js 16: "Set export const instant = false to allow a blocking route").
+export const instant = false;
+
+export default async function HomePage() {
+  await connection();
+  const demoMode = isDemoMode(process.env.APP_DATA_MODE);
+
   return (
     <div className="flex flex-1 flex-col">
       {demoMode && (
@@ -16,7 +25,7 @@ export default function HomePage() {
       <main className="mx-auto w-full max-w-[1200px] flex-1 px-4 py-10 md:px-6">
         <section className="rounded-[var(--radius-md)] border border-border bg-surface p-6 shadow-[0_1px_2px_rgb(15_23_42/0.06)] md:p-8">
           <p className="text-[13px] leading-5 font-medium tracking-wide text-primary uppercase">
-            BCREC · Beldanga
+            BCREC · Durgapur
           </p>
           <h1 className="mt-2 text-[24px] leading-8 font-semibold text-foreground md:text-[30px] md:leading-9 md:font-bold">
             BCREC Student Life Platform
