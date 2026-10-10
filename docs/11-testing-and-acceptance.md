@@ -1,7 +1,7 @@
 # Testing Strategy and Acceptance Gates
 
 **Status:** Proposed quality bar  
-**Date:** 2026-10-10
+**Date:** 2026-10-10 · **Revision:** 0.2 (P0/P1 test mapping; toolchain commands proposed)
 
 ## 1. Testing philosophy
 
@@ -10,12 +10,13 @@ Test user-visible behavior and security boundaries, not only implementation deta
 ## 2. Test layers
 
 ### Unit tests
-- Pure academic calculations (including zero denominator, rounding and invalid/missing policy).
+- Pure academic calculations (including zero denominator, rounding and invalid/missing policy) on synthetic fixtures.
 - Rule applicability by programme/cohort/effective date.
+- Derived data-quality shorthands from the four canonical provenance fields (`06` §9.6).
 - Task priority/date normalization/time zones.
 - Zod schemas for forms, API payloads and GenUI outputs.
-- Permission predicates and state-transition functions.
-- Notice deduplication/verification state transitions.
+- Permission predicates and state-transition functions, including every cell of the `08` §3 matrix.
+- Notice deduplication/provenance state transitions (`unreviewed → reviewed → approved_for_display → approved_for_rule_engine`, `rejected`, `superseded`).
 
 ### Integration tests
 - Database constraints and RLS policies.
@@ -25,15 +26,22 @@ Test user-visible behavior and security boundaries, not only implementation deta
 - Source provenance propagation from persistence to API/UI.
 - Notification scheduling/deduplication and retry state.
 
-### End-to-end tests
+### End-to-end tests (P0)
 - Login → student dashboard.
 - Dashboard → calendar → create/complete personal task.
 - Upload supported sample document → query it → open source citation.
 - Invalid GenUI payload → safe fallback.
 - Student A cannot access Student B's record by changing IDs.
 - Notice marked unverified is not shown as an approved rule.
-- Stale/absent attendance feed does not show a fabricated percentage/eligibility verdict.
+- Synthetic academic overview shows the demo label and provenance (`dataOrigin = synthetic_demo`); it never shows an official eligibility verdict.
+- Production-mode configuration receives `unavailable` (not synthetic rows) for academic data.
+- Deferred write endpoints (attendance correction, marks change, policy approval) return not-implemented/denied; no partial write occurs.
+- P1 navigation items (Help & Mentor, Career & Projects) are absent or non-functional “Coming later” entries—no dead links.
+
+### End-to-end tests (P1 — enable when the features ship)
 - Submit support ticket → confirmation → status persists after refresh.
+- Authorized attendance/marks integration shows source, freshness and correction-request path.
+- Policy-backed advisory alert includes policy version and remains advisory, not an eligibility decision.
 
 ### Manual UX/accessibility review
 - Keyboard navigation and visible focus.
@@ -63,6 +71,7 @@ Test user-visible behavior and security boundaries, not only implementation deta
 - LLM returns unregistered component, extra fields, malformed dates, huge arrays or unsafe URL.
 - Double submit/retry creates duplicate tickets/reminders.
 - Stale/conflicting/draft policy source is used for eligibility.
+- Synthetic (`synthetic_demo`) rows appear in a production-mode session or escape the demo label.
 - Database migration fails part-way or a backup restore is needed.
 
 ## 5. Definition of Ready (before coding a feature)
@@ -91,17 +100,18 @@ A feature is done when:
 
 ## 7. CI quality gates
 
-Proposed sequence:
-1. Formatting/lint.
-2. Type check.
-3. Unit tests.
-4. Schema/migration check or disposable-database migration test.
-5. Integration tests.
-6. Production build.
-7. Critical Playwright flows and authorization E2E tests.
-8. Dependency/security checks supported by chosen tooling.
+Proposed sequence with **proposed commands** (verify and finalize during framework bootstrap; see `docs/runbooks/local-development.md`):
 
-Set branch protection when the team is ready. Never disable a failing critical test simply to merge.
+1. Formatting/lint — `npm run lint` and `npm run format:check` (ESLint + Prettier).
+2. Type check — `npm run typecheck` (`tsc --noEmit`).
+3. Unit tests — `npm run test` (Vitest).
+4. Schema/migration check or disposable-database migration test — `npx supabase db reset` against a local disposable database.
+5. Integration tests — `npm run test:integration` (Vitest + local/test database).
+6. Production build — `npm run build`.
+7. Critical Playwright flows and authorization E2E tests — `npm run test:e2e`.
+8. Dependency/security checks supported by chosen tooling (e.g. `npm audit` plus the chosen scanner).
+
+Package manager: **npm** with a committed lockfile (`package-lock.json`). Set branch protection when the team is ready. Never disable a failing critical test simply to merge.
 
 ## 8. Reliability/experience measures
 
@@ -117,5 +127,6 @@ Establish real baselines before publishing numeric SLOs. Track:
 ## 9. Tools reference
 
 - [Playwright documentation](https://playwright.dev/docs/intro)
+- [Vitest documentation](https://vitest.dev/guide/)
 - [Next.js testing guidance](https://nextjs.org/docs/app/guides/testing)
 - [Supabase local development and migrations](https://supabase.com/docs/guides/local-development/cli-workflows)

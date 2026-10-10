@@ -32,6 +32,7 @@ Do not claim a command or test passed unless it actually ran and passed.
 
 - Never invent attendance, marks, class routines, examination dates, results, eligibility, scholarship status, fees, or institutional decisions.
 - Every policy-driven calculation must resolve an approved policy version with its programme/batch applicability, effective period, source document, and verification state.
+- Use the four canonical provenance fields (`dataOrigin`, `sourceVerification`, `contentReview`, `freshnessStatus`) defined in `docs/06-data-sources-and-academic-rules.md` §9; do not invent alternate enums.
 - A draft regulation, old circular, student recollection, scraped text, or AI response is not enough to authorize a consequential academic decision.
 - If authoritative data is unavailable or stale, show “not verified / data last updated …” and offer the official source or support route. Do not fabricate a value.
 - Predictive risk is an advisory signal, not an official eligibility decision. Final approvals and corrections belong to authorized staff/processes.
@@ -55,11 +56,12 @@ Do not claim a command or test passed unless it actually ran and passed.
 - Use foreign keys, constraints, indexes, transactions, and tenant/owner boundaries intentionally.
 - Review Row Level Security (RLS) policies and test both allowed and denied access paths for every protected table.
 - Keep generated/seeding data clearly synthetic. Never seed real personal student data into a public demo.
+- Synthetic academic records are allowed only in demo/development environments and must be labelled; production sessions must never receive synthetic attendance, marks, exam dates, results, or eligibility data (`docs/07-technical-architecture.md` §8, `docs/12-security-deployment-and-ops.md` §7).
 
 ## 7. Frontend and design system
 
-- Use the approved design tokens and shared components. Avoid arbitrary one-off colors, spacing, shadows, and duplicate primitives.
-- Design loading, empty, error, offline/timeout, stale-data, and success states—not only the happy path.
+- Use the approved design tokens and shared components (`docs/04-design-system.md` — concrete provisional values). Avoid arbitrary one-off colors, spacing, shadows, and duplicate primitives.
+- Design loading, empty, error, offline/timeout, stale-data, unavailable/not-connected, demo-data-label, and success states—not only the happy path.
 - Build responsive layouts, semantic HTML, keyboard access, visible focus, labels, and accessible contrast.
 - Prefer server-rendered/data-fetching components where suitable; use client-side interactivity only where needed.
 - Avoid enormous components and duplicate business logic. Keep domain calculations outside presentation components.

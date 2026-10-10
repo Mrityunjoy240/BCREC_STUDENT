@@ -1,16 +1,25 @@
 # Product Requirements Document and MVP Scope
 
 **Status:** Draft for owner review  
-**Version:** 0.1 · 2026-10-10
+**Version:** 0.2 · 2026-10-10 (MVP boundaries reconciled with routes; pilot/data mode recorded)
 
 ## 1. Release strategy
 
 Build and validate a Student Website first using a vertical-slice approach. Deliver a coherent working path rather than many disconnected screens. The mobile app, full administrative suite, and deeper institutional integrations follow only after core website behavior and API boundaries are stable.
 
 Priority labels:
-- **P0 — MVP blocking:** required for a credible, safe pilot.
-- **P1 — Next:** valuable after the primary workflows are stable.
-- **P2 — Future:** explicitly not required for the first release.
+- **P0 — First usable website demo:** required for a credible, safe demo/pilot.
+- **P1 — After the first working demo:** valuable once P0 workflows are stable.
+- **P2 — Future:** explicitly not required for the first two releases.
+
+### 1.1 Pilot and data mode (proposed default — pending owner approval)
+
+- The initial release targets a **local development/demo environment using clearly labelled synthetic data** (`dataOrigin = synthetic_demo`).
+- Do **not** assume BCREC has authorized access to official ERP/EMS or student records. No official integration is implied until verified and authorized.
+- Do **not** introduce real student data until access, authorization, privacy review, and source reliability have been verified.
+- In **production mode**, missing official data displays an explicit unavailable state. Never silently fall back to synthetic data (see §6 Reliability/Privacy and `12` §7).
+- Proposed first UI language: **English**. The AI layer is designed to support English, Bengali and Hindi, subject to model and quality evaluation (**pending approval**).
+- Choices above that require owner or institutional approval are marked pending; they are defaults, not authorizations.
 
 ## 2. Personas
 
@@ -27,10 +36,10 @@ Priority labels:
 
 ### P0.1 Identity and onboarding
 - Support secure sign-in and sign-out.
-- Show a student's permitted profile and programme/batch context.
+- Show a student's permitted profile and programme/batch context (synthetic cohort in demo mode).
 - Handle unauthenticated access, expired sessions, and disabled accounts safely.
 - Do not let public registration grant a privileged staff role.
-- If the pilot uses test accounts, label and isolate them from real data.
+- Test/demo accounts are labelled and isolated from any real data.
 
 **Acceptance:** A user can authenticate and see only authorized navigation/data. A student cannot set their own role or programme/batch by editing a request.
 
@@ -46,7 +55,7 @@ Priority labels:
 - Keep official events separate from personal tasks and AI suggestions.
 - Support task creation, edit, completion, due date, priority, and reminder preference for personal tasks.
 - Support confirmed notice/task links where available.
-- Apply timezone consistently; default campus timezone to Asia/Kolkata unless configuration says otherwise.
+- Apply timezone consistently; default campus timezone to Asia/Kolkata unless configuration says otherwise (**proposed default — pending owner approval**, consistent with `03` §4 and `05` §1).
 
 **Acceptance:** A task can be created, refreshed, marked complete, and shown consistently in the calendar and dashboard. Duplicate submissions do not duplicate actions.
 
@@ -60,22 +69,25 @@ Priority labels:
 
 ### P0.5 GenUI in the assistant
 - Use a fixed allowlist of interactive UI components driven by validated structured data.
-- MVP components: study-plan card, quiz, flashcards, source card, task list, and progress chart with synthetic/demo data where appropriate.
+- MVP components: study-plan card, quiz, flashcards, source citation card, task list, and progress chart.
+- Progress/academic GenUI components in P0 render only synthetic demo or the user's own learning artifacts, with visible provenance labels.
 - Explain errors in plain text if a component cannot render.
 - Do not execute model-generated JavaScript/JSX/HTML.
 
 **Acceptance:** Invalid component names/schema values are rejected and safely fall back to text; component actions are permission-checked.
 
-### P0.6 Academic record views — only when source exists
-- Provide data models and views for attendance, assessments/marks, assignments, and results in the pilot scope.
-- Every record indicates source and last-updated timestamp.
-- Mark demonstration data as synthetic.
+### P0.6 Academic overview screens — synthetic demo data only
+- Provide data models and views for attendance, assessments/marks, assignments, and results, driven in P0 by clearly labelled synthetic demo data.
+- Every record carries the four canonical provenance fields (`dataOrigin`, `sourceVerification`, `contentReview`, `freshnessStatus` — see `06` §9); synthetic rows show `dataOrigin = synthetic_demo` with a visible demo badge/banner.
+- Attendance may show **hypothetical arithmetic** (e.g. attended/conducted for the demo cohort) but must not claim official exam eligibility, detention, or promotion status.
+- These views are **read-only** in P0; no attendance/marks write endpoints are exposed (see `08` §8).
 - Do not imply integration with an official portal until one is authorized and implemented.
 
-**Acceptance:** If authoritative records are absent, show “not connected/not verified”; never derive an official status from blank or simulated data.
+**Acceptance:** If authoritative records are absent (production mode), show “not connected/not verified”; never derive an official status from blank or simulated data; no P0 screen presents synthetic values as official records.
 
 ### P0.7 Notices and source provenance
-- Store a notice with title, body/summary, source URL/document, issued/published date if known, captured date, applicability tags, status, and reviewer/verification state.
+- Store a notice with title, body/summary, source URL/document, issued/published date if known, captured date, applicability tags, status, and the four canonical provenance fields (`06` §9).
+- P0 notice summaries use verified reference material from `13-research-and-source-register.md`, labelled with source and review state.
 - Treat imported notice text and attachments as untrusted data.
 
 **Acceptance:** A student can open the original source for a verified notice; missing date or applicability is visibly marked unknown.
@@ -88,21 +100,24 @@ Priority labels:
 
 **Acceptance:** Tests prove both allowed and denied access paths for student A, student B, and a permitted staff test role.
 
-## 4. P1 — after the MVP's critical workflows pass
+## 4. P1 — after the first working demo
 
+- Authorized institutional attendance/marks integrations, when an authorized source actually exists.
+- Policy-backed academic-risk and eligibility calculations (only with `approved_for_rule_engine` policy versions; see `06` §9.5).
+- Attendance what-if calculator and correction-request workflow, after the correction owner is confirmed (`08` §8).
 - Mentor appointment requests and assigned-mentee follow-up workflow.
 - Help-desk/support tickets with assignment, status, and audit trail.
-- More complete examination forms/results/backlog information based on approved sources.
-- Career roadmaps, internships, portfolio/project tracking.
-- In-app notifications and email notifications, as operationally approved.
+- Examination-form, results and backlog workflows that require official data or institutional actions.
+- Career roadmaps, internships, portfolio/project tracking and placement-preparation services.
+- In-app notifications and email notifications, as operationally approved; push and other integrations requiring additional permissions/infrastructure.
 - Staff tools for reviewing/importing verified notices and permitted academic records.
 - Data quality monitoring and administrator dashboards.
 - Expanded accessibility and multilingual UX based on pilot feedback.
 
-## 5. P2 — future, not MVP
+## 5. P2 — future, not the first two releases
 
 - Essential native mobile app with push notifications.
-- Authorized integrations with institutional ERP/EMS/MAKAUT portals.
+- Broader authorized integrations with institutional ERP/EMS/MAKAUT portals beyond the P1 attendance/marks scope.
 - Finance/payment gateway, scholarship application submission, and deep library/hostel integrations.
 - Full exam-cell or placement-cell product.
 - Broad workflow automation with external system writes.
@@ -113,6 +128,7 @@ Priority labels:
 ### Reliability
 - All network requests have timeout/error behavior and user-readable recovery guidance.
 - Critical data is never silently replaced with demo/stale values.
+- Synthetic academic records may be used only in development/test/demo environments and must be clearly labelled. Production sessions must never substitute synthetic attendance, marks, exam dates, results, or eligibility data when authoritative data is missing.
 - Database migrations are versioned and tested before shared-environment application.
 
 ### Performance
@@ -127,7 +143,7 @@ Priority labels:
 
 ### Privacy
 - Minimize personal data. Restrict access by ownership and assignment.
-- Use synthetic data in public demo environments.
+- Use synthetic data only in development/test/demo environments, clearly labelled; never mix it into production student sessions (see §6 Reliability and `12` §7).
 - Establish retention/deletion rules before production, especially for uploaded materials, prompts, support tickets, and sensitive mentor notes.
 
 ### Maintainability
@@ -148,13 +164,14 @@ Priority labels:
 
 | Dependency | Needed for | If unavailable |
 |---|---|---|
-| Approved pilot audience/programme/batch list | Correct policy applicability | Use clearly labelled synthetic cohort only |
-| Official academic rules and effective dates | Attendance/exam calculations | Show guidance only; no eligibility determination |
-| Authoritative timetable/notice feed | Reliable dashboard reminders | Curated manual records with source/reviewer and freshness label |
-| Authorized attendance/marks source | Academic analytics | Do not show simulated values as official |
+| Approved pilot audience/programme/batch list | Correct policy applicability | Use clearly labelled synthetic cohort only (P0 default) |
+| Official academic rules and effective dates | Attendance/exam calculations (P1) | Show guidance/hypothetical arithmetic only; no eligibility determination |
+| Authoritative timetable/notice feed | Reliable dashboard reminders | Curated manual records with source/reviewer and freshness label, or clearly labelled demo schedule |
+| Authorized attendance/marks source | Official academic analytics (P1) | Synthetic demo views only, visibly labelled; never simulated-as-official |
 | Authentication/identity mapping | Secure access | Restrict to demo accounts, not real student data |
-| Approved AI provider and data policy | AI chat/upload | Use non-sensitive synthetic materials in development |
+| Approved AI provider and data policy | AI chat/upload | Use non-sensitive synthetic materials in development; mock provider in tests |
+| Confirmed academic correction owner | Attendance/marks write APIs, rule approval (P1) | Writes stay deferred; ticket-based requests only (`08` §8) |
 
 ## 9. MVP release gate
 
-Do not pilot with real student data until identity and role checks, RLS policies, source/provenance, backup/recovery, privacy notice, error states, and the critical test suite have been reviewed. The owner must approve remaining assumptions and release scope.
+Do not pilot with real student data until identity and role checks, RLS policies, source/provenance, backup/recovery, privacy notice, error states, and the critical test suite have been reviewed. The owner must approve the pilot/data-mode defaults in §1.1, remaining assumptions, and release scope. A P0 demo with synthetic data may proceed on the approved feature branch once ADRs 0001–0004 are accepted.

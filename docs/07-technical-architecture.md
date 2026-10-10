@@ -1,7 +1,7 @@
 # Technical Architecture — Proposed Baseline
 
 **Status:** Recommendation for owner approval  
-**Date:** 2026-10-10  
+**Date:** 2026-10-10 · **Revision:** 0.2 (toolchain aligned with ADR 0001/0004; environment data-mode rules)  
 **Principle:** Small, modular monolith first; avoid premature microservices.
 
 ## 1. Recommended starting stack
@@ -9,17 +9,19 @@
 | Concern | Proposed default | Notes |
 |---|---|---|
 | Website | Next.js App Router + React + TypeScript | Keep current stable supported versions pinned during setup. Use server components/data fetching where appropriate and client components for actual interactivity. |
-| Styling/components | Tailwind CSS + accessible shared components (shadcn/ui or equivalent) | Use a versioned design token layer. Choose one component approach and avoid parallel UI libraries without reason. |
+| Package manager | npm with committed `package-lock.json` | Per ADR 0001; do not switch package managers without a recorded decision. |
+| Styling/components | Tailwind CSS + accessible shared components (shadcn/ui or equivalent) | Use the design token layer defined in `04-design-system.md`. Choose one component approach and avoid parallel UI libraries without reason. |
+| Lint/format | ESLint + Prettier (committed configs) | One project-wide style; run in CI before deploy. |
 | Forms/schema | React Hook Form where useful + Zod | Zod validates client forms for feedback and independently validates server inputs; client validation is not a security boundary. |
-| Database | PostgreSQL via Supabase | Relational academic data, constraints, indexes, SQL migrations and versioned seed data. |
+| Database | PostgreSQL via Supabase | Relational academic data, constraints, indexes, SQL migrations and versioned seed data. Migrations via Supabase CLI. |
 | Identity | Supabase Auth (proposed) | Role assignments and scope checked server-side; Auth alone does not define institution permissions. |
 | File storage | Private Supabase Storage buckets or equivalent private object storage | Authorization before issuing signed URLs; retention/deletion workflow required. |
-| AI UI/Core | Vercel AI SDK or comparable provider-agnostic TypeScript orchestration | Verify current stable APIs at implementation time; isolate provider-specific code behind an adapter. |
+| AI UI/Core | Vercel AI SDK or comparable provider-agnostic TypeScript orchestration | Verify current stable APIs at implementation time; isolate provider-specific code behind an adapter. **Provider, embeddings model/dimension, and account/region are pending decisions** (ADR 0004) until benchmarked and approved. |
 | Validation | Zod/schema validation for API payloads and AI tool results | Parse at trust boundaries. |
 | Charts | Recharts or native accessible summary/table | Charts always have a data/table alternative. |
-| Testing | Unit/integration tests plus Playwright browser E2E | Pick a test runner during setup and keep commands stable. |
-| Observability | Structured server logs + error tracking with redaction | Never log API keys, raw sensitive mentor notes, or full private prompts by default. |
-| Deployment | Managed Next.js hosting + Supabase; CI checks before deploy | Hosting choice is a later ADR; do not tie domain logic to vendor-specific APIs unnecessarily. |
+| Testing | Vitest (unit/component) + Playwright (critical browser E2E) + integration tests | Per ADR 0001; commands proposed in `11` §7, finalized at bootstrap. |
+| Observability | Structured server logs + error tracking with redaction | Never log API keys, raw sensitive mentor notes, or full private prompts by default. Vendor pending. |
+| Deployment | Managed Next.js hosting + Supabase; CI checks before deploy | Vendor and production gate per **ADR 0004**; do not tie domain logic to vendor-specific APIs unnecessarily. |
 | Future mobile | React Native + Expo (proposal) | Later phase, same backend/domain APIs; not part of website MVP. |
 
 These are proposed defaults, not a requirement to add every package immediately. Check supported versions and security advisories when bootstrapping.
@@ -67,7 +69,7 @@ Keep domain rules in server-side service modules; do not duplicate eligibility m
 - Use stable response shapes and explicit error codes/categories.
 - Add pagination, filters and maximum limits to list endpoints.
 - Use idempotency for actions where repeated delivery could duplicate requests/notifications.
-- Expose provenance (`source`, `observedAt`, `verificationState`) where relevant; do not strip these fields before the UI.
+- Expose provenance (`sourceId`, `dataOrigin`, `sourceVerification`, `contentReview`, `freshnessStatus`, `observedAt` — canonical model in `06-data-sources-and-academic-rules.md` §9) where relevant; do not strip these fields before the UI.
 
 ## 6. Background and async work
 
@@ -83,11 +85,18 @@ Define a provider-neutral interface for:
 
 The provider adapter must not contain academic authorization logic. All tools call domain services which independently check permission and source applicability.
 
-## 8. Environments
+## 8. Environments and data mode
 
 - **Local:** synthetic data, local/env-only credentials, repeatable migrations and seed fixtures.
 - **Preview/staging:** isolated database/project, restricted access, synthetic or specifically authorized test data.
-- **Production:** approved privacy/access settings, backups, monitoring, least privilege, reviewed migrations and incident contact.
+- **Production:** approved privacy/access settings, backups, monitoring, least privilege, reviewed migrations and incident contact. Production is gated on ADR 0004's security/privacy/operational review.
+
+An environment-level **data mode** configuration (e.g. `APP_DATA_MODE=demo | production`, name provisional) controls what academic data may be served:
+
+- `demo` (local/preview): rows with `dataOrigin = synthetic_demo` are allowed and must render the demo label/banner from `04-design-system.md` §4.
+- `production`: the server must never return `synthetic_demo` academic records (attendance, marks, exam dates, results, eligibility). Missing authoritative data returns `freshnessStatus = unavailable` with an explicit unavailable state instead.
+- Enforcement is server-side (query scope and/or RLS conditions on `dataOrigin`), not a UI toggle. A client flag cannot switch modes.
+- Seed/migration tooling refuses to load synthetic academic seeds into a production database.
 
 Never reuse production service-role credentials in local demos or preview apps.
 

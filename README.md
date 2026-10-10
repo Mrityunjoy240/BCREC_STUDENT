@@ -1,10 +1,22 @@
 # BCREC Student Life Platform — Project Handbook
 
-**Status:** Planning baseline (draft for owner review)  
+**Status:** Planning baseline with resolved blockers (draft for owner review)  
 **Last reviewed:** 2026-10-10  
 **Repository target:** [`Mrityunjoy240/BCREC_STUDENT`](https://github.com/Mrityunjoy240/BCREC_STUDENT)  
 **First product:** Student Website  
 **Later product:** Essential Student Mobile App sharing the same backend
+
+## Planning revision notes (2026-10-10)
+
+Blockers B2–B8 from the initial review have been addressed as **proposed defaults pending owner approval**:
+
+- **Pilot/data mode:** local development/demo with labelled synthetic data; English UI first; AI layer designed for English/Bengali/Hindi pending evaluation (`01` §1.1).
+- **Design system:** concrete provisional tokens in `04` (slate/blue, Inter, numeric scales); not official BCREC branding until verified.
+- **Data verification model:** four canonical fields — `dataOrigin`, `sourceVerification`, `contentReview`, `freshnessStatus` (`06` §9), used consistently in `05`/`07`/`09`/`10`.
+- **Roles/permissions:** full 10-role × operation matrix (`08` §3); academic write APIs deferred until a correction owner is confirmed (`08` §8).
+- **MVP boundaries:** P0 demo / P1 / future levels reconciled across `01`/`02`/`03`/`11`; no P1 routes as live P0 navigation.
+- **Toolchain:** npm + lockfile, ESLint/Prettier, Vitest, Playwright, Supabase CLI (ADR 0001); hosting and production gate in **ADR 0004**.
+- **Synthetic-data isolation:** server-side data-mode rules; production sessions never receive synthetic academic records (`07` §8, `12` §7).
 
 ## Purpose
 

@@ -15,7 +15,7 @@ The Student Website has relational academic data, user-owned learning documents,
 - Use Row Level Security (RLS) for protected tables and server-side role/scope checks for every operation.
 - Store uploads in private buckets and issue authorized, short-lived signed URLs where needed.
 - Split institutional academic records, personal tasks, learning artefacts, and AI-generated suggestions into distinct domains.
-- Maintain provenance, verification state and effective-dated policy mapping for policy-driven records.
+- Maintain the four canonical provenance fields (`dataOrigin`, `sourceVerification`, `contentReview`, `freshnessStatus`) and effective-dated policy mapping for policy-driven records.
 
 ## Alternatives considered
 
@@ -41,7 +41,7 @@ Trade-offs:
 - No service-role key in the client.
 - No destructive resets of existing/shared schemas as a routine workflow.
 - Test cross-user access, role scope and denied paths.
-- Start with synthetic data until data access is authorized.
+- Start with synthetic data until data access is authorized; synthetic academic records stay in demo/dev environments only (see ADR 0004 and `07` §8).
 
 ## References
 

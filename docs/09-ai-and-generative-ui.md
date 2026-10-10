@@ -1,7 +1,7 @@
 # AI and Generative UI Architecture
 
 **Status:** Proposed design for review before implementation  
-**Date:** 2026-10-10
+**Date:** 2026-10-10 · **Revision:** 0.2 (language plan; provenance fields aligned with `06` §9)
 
 ## 1. Objective
 
@@ -22,7 +22,7 @@ Turn the assistant from a text-only chatbot into a helpful, source-aware interfa
 
 ## 3. GenUI component registry
 
-MVP registry (proposed):
+P0 registry (proposed):
 
 | Component | Input purpose | Allowed interactions | Explicit limitations |
 |---|---|---|---|
@@ -33,7 +33,7 @@ MVP registry (proposed):
 | `TaskListCard` | Personal or authorized tasks | Check, reorder personal list, open source | Official task completion only from the authoritative workflow |
 | `ProgressChart` | Validated series and labels | Change range/filter if allowed | Never infer or fabricate missing academic records; include accessible table/text alternative |
 
-Later after review: `AttendanceWhatIfCalculator`, `NoticeSummaryCard`, `SupportRequestForm`, `CalendarPlanCard`, `MentorAppointmentRequest`.
+Later after review: `AttendanceWhatIfCalculator` (P1, after permission/security review — see `02` Journey 4), `NoticeSummaryCard`, `SupportRequestForm`, `CalendarPlanCard`, `MentorAppointmentRequest`.
 
 Do not allow a generic `CustomHTML`, `RunCode`, arbitrary React component name, SQL, shell, or URL fetch tool.
 
@@ -50,11 +50,11 @@ Read-only starting tools:
 - `generate_quiz(sourceIds, topic, difficulty, count)` — operates on sources the user can access.
 - `draft_study_plan(availability, goals, deadlines, sources)` — suggestion only; deadlines must come from verified inputs.
 
-Controlled write tools (later, confirmation required):
-- `create_personal_task(payload)`.
-- `save_study_plan(payload)`.
-- `request_mentor_appointment(payload)`.
-- `create_support_ticket(payload)`.
+Controlled write tools (confirmation required; scoped to the current user):
+- `create_personal_task(payload)` — P0.
+- `save_study_plan(payload)` — P0.
+- `request_mentor_appointment(payload)` — P1 (mentor features deferred, `01` §4).
+- `create_support_ticket(payload)` — P1 (ticket features deferred, `01` §4).
 
 Not allowed to expose as autonomous tools: change attendance, change marks/results, approve exam eligibility, approve scholarship, discipline a student, close a grievance, send mass notices, charge/refund money, or change policy rules.
 
@@ -95,7 +95,7 @@ This is illustrative only and not a final schema. Validate maximum item count, d
 
 For a policy-sensitive question, the assistant should:
 1. Identify the relevant programme/batch/term if known.
-2. Retrieve a current source with correct applicability and approval state.
+2. Retrieve a current source with correct applicability and the canonical provenance fields (`dataOrigin`, `sourceVerification`, `contentReview`, `freshnessStatus` — `06` §9).
 3. Show the issuing body, date, applicability, last-verified time, and source link where available.
 4. Avoid a definitive answer when source status is draft, old, conflicting, or unknown.
 5. Offer a route to the authorized office rather than invent a policy.
@@ -126,7 +126,7 @@ AI-generated confidence scores are not a substitute for verification.
 Maintain a versioned set of test conversations covering:
 - Grounded answers with correct citations.
 - No-answer/not-in-source behavior.
-- Mixed English/Bengali/Hindi language where supported.
+- English (first UI language, proposed). Bengali/Hindi evaluation cases once those languages are approved (`01` §1.1); mixed-language support is pending model/quality evaluation.
 - Incorrect or stale notice applicability.
 - Cross-user private document access attempts.
 - Prompt injection inside PDFs/notices/forum posts.

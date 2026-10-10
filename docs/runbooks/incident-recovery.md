@@ -37,6 +37,7 @@ Severity and communication process must be approved by the actual institutional/
 ## Bad academic data or rule
 
 - Mark the source/rule as unverified, stale, superseded or conflicting; suppress consequential calculations where needed.
+- If synthetic demo data (`dataOrigin = synthetic_demo`) is discovered reachable in a production session, treat as SEV-2: suppress the rows immediately, confirm the data-mode guard (`07` §8, `12` §7), and add a regression test before re-enabling.
 - Notify the source/policy owner and stop distribution of the incorrect claim.
 - Correct the source mapping through a reviewed change, not by changing values invisibly.
 - Identify affected students/outputs and follow approved correction/communication procedures.
