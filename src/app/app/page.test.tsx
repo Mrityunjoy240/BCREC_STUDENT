@@ -16,10 +16,12 @@ async function renderDashboard() {
 }
 
 describe("DashboardPage", () => {
-  it("renders the Home title and all dashboard sections", async () => {
+  it("renders the Home title, learning gateway and all dashboard sections", async () => {
     const html = await renderDashboard();
     expect(html).toContain("Home");
-    expect(html).toContain("Learning workspace");
+    expect(html).toContain("Learning Workspace");
+    expect(html).toContain('href="/app/learn"');
+    expect(html).toContain("Open workspace");
     expect(html).toContain("Calendar &amp; upcoming schedule");
     expect(html).toContain("Personal tasks");
     expect(html).toContain("Academic overview");
