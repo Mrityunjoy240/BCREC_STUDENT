@@ -1,5 +1,12 @@
 import { describe, expect, it } from "vitest";
-import { assertNotAuthConfigError, isAuthConfigError, resolveRlsTestConfig } from "./rls-preflight";
+import {
+  assertAnonWriteDenied,
+  assertExpectedAnonDenial,
+  assertNotAuthConfigError,
+  isAuthConfigError,
+  isPermissionDenied,
+  resolveRlsTestConfig,
+} from "./rls-preflight";
 
 describe("resolveRlsTestConfig", () => {
   it("skips explicitly when the local API is unreachable (not RLS verification)", () => {
@@ -57,6 +64,19 @@ describe("resolveRlsTestConfig", () => {
   });
 });
 
+describe("isPermissionDenied", () => {
+  it("matches only SQLSTATE 42501", () => {
+    expect(
+      isPermissionDenied({ code: "42501", message: "permission denied for table profiles" }),
+    ).toBe(true);
+    expect(
+      isPermissionDenied({ code: "42P01", message: 'relation "missing" does not exist' }),
+    ).toBe(false);
+    expect(isPermissionDenied({ code: "", status: 401, message: "Invalid API key" })).toBe(false);
+    expect(isPermissionDenied(null)).toBe(false);
+  });
+});
+
 describe("isAuthConfigError", () => {
   it("classifies invalid/missing API key errors as configuration failures", () => {
     expect(isAuthConfigError({ message: "Invalid API key", code: "", status: 401 })).toBe(true);
@@ -67,6 +87,25 @@ describe("isAuthConfigError", () => {
     expect(isAuthConfigError({ status: 401, message: "unauthorized" })).toBe(true);
     expect(isAuthConfigError({ code: "PGRST301", message: "JWT expired" })).toBe(true);
     expect(isAuthConfigError({ code: "PGRST302", message: "JWT invalid" })).toBe(true);
+  });
+
+  it("classifies a 42501 permission denial with HTTP 401 as a denial, NOT a config error", () => {
+    // PostgREST can return 42501 with HTTP status 401 for unauthenticated/anon
+    // requests against privilege-revoked tables. The SQLSTATE must win.
+    expect(
+      isAuthConfigError({
+        message: "permission denied for table role_assignments",
+        code: "42501",
+        status: 401,
+      }),
+    ).toBe(false);
+    expect(
+      isAuthConfigError({
+        message: "permission denied for table profiles",
+        code: "42501",
+        status: 401,
+      }),
+    ).toBe(false);
   });
 
   it("does NOT classify RLS authorization denials as configuration failures", () => {
@@ -86,6 +125,69 @@ describe("isAuthConfigError", () => {
     expect(isAuthConfigError(null)).toBe(false);
     expect(isAuthConfigError(undefined)).toBe(false);
     expect(isAuthConfigError("plain string")).toBe(false);
+  });
+});
+
+describe("assertExpectedAnonDenial", () => {
+  it("accepts a 42501 denial (including with HTTP 401) and a null error", () => {
+    expect(() =>
+      assertExpectedAnonDenial(
+        { code: "42501", status: 401, message: "permission denied for table profiles" },
+        "anon SELECT on profiles",
+      ),
+    ).not.toThrow();
+    expect(() => assertExpectedAnonDenial(null, "anon SELECT on profiles")).not.toThrow();
+    expect(() => assertExpectedAnonDenial(undefined, "anon SELECT on profiles")).not.toThrow();
+  });
+
+  it("fails loudly on unexpected errors such as missing table (42P01)", () => {
+    expect(() =>
+      assertExpectedAnonDenial(
+        { code: "42P01", status: 404, message: 'relation "profiles" does not exist' },
+        "anon SELECT on profiles",
+      ),
+    ).toThrow(/42501/);
+    expect(() =>
+      assertExpectedAnonDenial(
+        { code: "42P01", status: 404, message: 'relation "profiles" does not exist' },
+        "anon SELECT on profiles",
+      ),
+    ).toThrow(/42P01/);
+  });
+
+  it("propagates auth/config errors as loud setup failures", () => {
+    expect(() =>
+      assertExpectedAnonDenial(
+        { message: "Invalid API key", code: "", status: 401 },
+        "anon SELECT on profiles",
+      ),
+    ).toThrow(/NOT an RLS denial/i);
+  });
+});
+
+describe("assertAnonWriteDenied", () => {
+  it("accepts a 42501 write denial", () => {
+    expect(() =>
+      assertAnonWriteDenied(
+        { code: "42501", status: 401, message: "permission denied for table role_assignments" },
+        "anon INSERT into role_assignments",
+      ),
+    ).not.toThrow();
+  });
+
+  it("fails loudly when the write unexpectedly succeeds (no error)", () => {
+    expect(() => assertAnonWriteDenied(null, "anon INSERT into role_assignments")).toThrow(
+      /unexpectedly succeeded/,
+    );
+  });
+
+  it("fails loudly on unexpected errors such as missing table (42P01)", () => {
+    expect(() =>
+      assertAnonWriteDenied(
+        { code: "42P01", status: 404, message: 'relation "audit_events" does not exist' },
+        "anon INSERT into audit_events",
+      ),
+    ).toThrow(/42P01/);
   });
 });
 

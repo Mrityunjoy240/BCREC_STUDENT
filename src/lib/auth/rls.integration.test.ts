@@ -1,6 +1,10 @@
 import { beforeAll, describe, expect, it } from "vitest";
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
-import { assertNotAuthConfigError, resolveRlsTestConfig } from "./rls-preflight";
+import {
+  assertAnonWriteDenied,
+  assertExpectedAnonDenial,
+  resolveRlsTestConfig,
+} from "./rls-preflight";
 
 /**
  * RLS integration checks against a disposable local Supabase instance.
@@ -50,7 +54,7 @@ describe.skipIf(config.mode !== "configured")("RLS integration (local Supabase)"
     });
   });
 
-  it("authenticated as anon, protected tables are hidden or empty — never config errors", async () => {
+  it("authenticated as anon, protected tables are hidden or empty — only 42501 or empty results", async () => {
     for (const table of [
       "profiles",
       "role_assignments",
@@ -60,33 +64,31 @@ describe.skipIf(config.mode !== "configured")("RLS integration (local Supabase)"
       "audit_events",
     ]) {
       const { data, error } = await anon.from(table).select("*").limit(1);
-      // A key/configuration failure must not be counted as an RLS denial.
-      assertNotAuthConfigError(error);
+      // Accept only a genuine privilege denial (SQLSTATE 42501) or an empty
+      // result. Config errors, missing tables (42P01), schema-cache errors,
+      // foreign-key errors and server failures all fail loudly.
+      assertExpectedAnonDenial(error, `anon SELECT on ${table}`);
       if (!error) {
         expect(data).toEqual([]);
-      } else {
-        expect(error).toBeTruthy();
       }
     }
   });
 
-  it("anonymous clients cannot insert into role_assignments or audit_events", async () => {
+  it("anonymous clients cannot insert into role_assignments or audit_events — only 42501", async () => {
     const roleInsert = await anon.from("role_assignments").insert({
       user_id: "00000000-0000-0000-0000-000000000001",
       role: "system_admin",
       scope_type: "institution",
       scope_id: null,
     });
-    assertNotAuthConfigError(roleInsert.error);
-    expect(roleInsert.error).toBeTruthy();
+    assertAnonWriteDenied(roleInsert.error, "anon INSERT into role_assignments");
 
     const auditInsert = await anon.from("audit_events").insert({
       action: "test",
       resource_type: "test",
       result: "allowed",
     });
-    assertNotAuthConfigError(auditInsert.error);
-    expect(auditInsert.error).toBeTruthy();
+    assertAnonWriteDenied(auditInsert.error, "anon INSERT into audit_events");
   });
 });
 

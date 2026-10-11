@@ -57,16 +57,38 @@ export function resolveRlsTestConfig(input: RlsTestConfigInput): RlsTestConfig {
 }
 
 /**
+ * PostgreSQL insufficient_privilege (SQLSTATE 42501) — the expected RLS /
+ * table-privilege denial. Our migration revokes anon table privileges, so
+ * PostgREST may surface this with HTTP status 401 or 403 for unauthenticated
+ * requests; the SQLSTATE always wins over the HTTP status.
+ */
+export function isPermissionDenied(error: unknown): boolean {
+  if (!error || typeof error !== "object") {
+    return false;
+  }
+  return (error as { code?: unknown }).code === "42501";
+}
+
+/**
  * True when an error indicates an authentication/API-configuration problem
  * (invalid or missing key, malformed JWT), NOT an expected RLS authorization
  * denial. RLS denials surface as PostgREST "permission denied" errors
  * (SQLSTATE 42501) or as an empty result set — never as 401/config errors.
+ *
+ * A PostgreSQL 42501 error is classified as a permission denial even when its
+ * HTTP status is 401, because PostgREST can return 401 alongside 42501 for
+ * unauthenticated/anon requests against privilege-revoked tables.
  */
 export function isAuthConfigError(error: unknown): boolean {
   if (!error || typeof error !== "object") {
     return false;
   }
   const candidate = error as { message?: unknown; code?: unknown; status?: unknown };
+  // SQLSTATE 42501 is authoritative: a legitimate privilege denial must never
+  // be misclassified as a bad API key just because HTTP status is 401.
+  if (isPermissionDenied(candidate)) {
+    return false;
+  }
   const message = typeof candidate.message === "string" ? candidate.message.toLowerCase() : "";
   const configPatterns =
     /invalid api key|invalid x-api-key|api key (is )?missing|no api key found|invalid jwt|jwt malformed|missing authorization|bearer token/i;
@@ -98,4 +120,56 @@ export function assertNotAuthConfigError(error: unknown): void {
         `See src/lib/auth/rls-preflight.ts for setup notes.`,
     );
   }
+}
+
+function describeError(error: unknown): string {
+  if (!error || typeof error !== "object") {
+    return String(error);
+  }
+  const candidate = error as { message?: unknown; code?: unknown; status?: unknown };
+  const parts: string[] = [];
+  if (candidate.code !== undefined) parts.push(`code=${String(candidate.code)}`);
+  if (candidate.status !== undefined) parts.push(`status=${String(candidate.status)}`);
+  if (candidate.message !== undefined) parts.push(`message=${String(candidate.message)}`);
+  return parts.length > 0 ? parts.join(" ") : JSON.stringify(error);
+}
+
+/**
+ * Assert that an anon SELECT outcome is an expected RLS result: either no
+ * error (caller verifies the empty/filtered result) or a genuine privilege
+ * denial (SQLSTATE 42501). Configuration errors fail via
+ * assertNotAuthConfigError; every other error — missing table (42P01),
+ * schema-cache, foreign-key, server failures — fails loudly with diagnostics
+ * instead of being accepted as proof of denial.
+ */
+export function assertExpectedAnonDenial(error: unknown, operation: string): void {
+  if (error === null || error === undefined) {
+    return;
+  }
+  assertNotAuthConfigError(error);
+  if (!isPermissionDenied(error)) {
+    throw new Error(
+      `RLS integration failure during ${operation}: unexpected error that is neither an ` +
+        `expected privilege denial (SQLSTATE 42501) nor an empty result. This can indicate ` +
+        `an unapplied migration (42P01 = missing table), a stale schema cache, a ` +
+        `foreign-key/contract defect, or a server error — not an RLS pass. Got: ` +
+        `${describeError(error)}`,
+    );
+  }
+}
+
+/**
+ * Assert that an anon INSERT was rejected with the expected privilege denial.
+ * A successful write fails the test (RLS/privileges not enforced); a
+ * configuration error or any non-42501 error fails loudly via
+ * assertExpectedAnonDenial.
+ */
+export function assertAnonWriteDenied(error: unknown, operation: string): void {
+  if (error === null || error === undefined) {
+    throw new Error(
+      `RLS integration failure during ${operation}: the write unexpectedly succeeded for an ` +
+        `anon client. Table privileges/RLS are not enforced as expected — this is NOT a pass.`,
+    );
+  }
+  assertExpectedAnonDenial(error, operation);
 }
