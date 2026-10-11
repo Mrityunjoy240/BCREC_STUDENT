@@ -77,6 +77,29 @@ describe("initial identity migration static guards", () => {
     expect(sql).toMatch(/valid_period/);
   });
 
+  it("keeps the role_assignments authorization index valid (no removed partial index)", () => {
+    expect(sql).not.toMatch(/role_assignments_user_active_idx/);
+    // The unique index leading with user_id supports the auth query filtered by user_id.
+    expect(sql).toMatch(
+      /create unique index role_assignments_unique_assignment\s+on public\.role_assignments \(user_id,/,
+    );
+  });
+
+  it("uses only IMMUTABLE-safe predicates in partial index WHERE clauses", () => {
+    // PostgreSQL rejects non-IMMUTABLE functions (e.g. now(), current_timestamp)
+    // in index predicates; the migration would fail at CREATE INDEX time.
+    const partialIndexes =
+      sql.match(
+        /create\s+(?:unique\s+)?index\s+\w+\s+on\s+[\w.]+\s*\([^)]*\)\s*where[\s\S]*?(?=;)/gi,
+      ) ?? [];
+    for (const idx of partialIndexes) {
+      expect(idx, `non-immutable predicate in: ${idx}`).not.toMatch(/\bnow\s*\(/i);
+      expect(idx, `non-immutable predicate in: ${idx}`).not.toMatch(
+        /\bcurrent_(?:timestamp|date|time)\b/i,
+      );
+    }
+  });
+
   it("provisions profiles without copying metadata into roles", () => {
     expect(sql).toMatch(/handle_new_user/);
     expect(sql).toMatch(/security definer/);

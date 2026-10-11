@@ -126,13 +126,10 @@ comment on table public.role_assignments is
   'Scoped, time-bounded role grants. Sole authorization authority for application roles.';
 
 -- Prevent duplicates including rows whose scope_id is NULL (Postgres 15+ NULLS NOT DISTINCT).
+-- Leading user_id also supports the authorization lookup filtered by user_id.
 create unique index role_assignments_unique_assignment
   on public.role_assignments (user_id, role, scope_type, scope_id)
   nulls not distinct;
-
-create index role_assignments_user_active_idx
-  on public.role_assignments (user_id)
-  where valid_to is null or valid_to > now();
 
 create table public.student_records (
   id uuid primary key default gen_random_uuid(),
