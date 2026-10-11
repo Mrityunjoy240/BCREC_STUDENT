@@ -26,13 +26,18 @@ export function EmptyState({ title, description, action }: EmptyStateProps) {
 type UnavailableStateProps = {
   title: string;
   description: string;
+  label?: string;
 };
 
-export function UnavailableState({ title, description }: UnavailableStateProps) {
+export function UnavailableState({
+  title,
+  description,
+  label = "Not connected",
+}: UnavailableStateProps) {
   return (
     <div className="rounded-[var(--radius-md)] border border-border bg-info-surface px-4 py-6">
       <p className="text-[13px] leading-5 font-medium text-info-text uppercase tracking-wide">
-        Not connected
+        {label}
       </p>
       <p className="mt-1 text-[15px] leading-6 font-medium text-foreground">{title}</p>
       <p className="mt-1 max-w-[60ch] text-[13px] leading-5 text-muted-foreground">{description}</p>

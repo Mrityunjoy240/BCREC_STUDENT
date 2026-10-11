@@ -23,6 +23,12 @@ describe("ui-states", () => {
     );
     expect(html).toContain("Not connected");
     expect(html).toContain("No data");
+
+    const planned = renderToStaticMarkup(
+      <UnavailableState label="Planned" title="Feature" description="Ships later." />,
+    );
+    expect(planned).toContain("Planned");
+    expect(planned).not.toContain("Not connected");
   });
 
   it("EmptyState renders an optional working action link only when provided", () => {

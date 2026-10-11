@@ -32,8 +32,10 @@ describe("DashboardPage", () => {
     expect(html).toContain("Official schedule is not connected");
     expect(html).toContain("Academic data is unavailable");
     expect(html).toContain("Official notice source is not connected");
-    expect(html).toContain("No personal tasks yet");
+    expect(html).toContain("Personal tasks are not implemented yet");
     expect(html).toContain("not implemented yet");
+    expect(html).toContain("Planned");
+    expect(html).not.toContain("Create tasks");
     expect(html).not.toMatch(/\d+\s?%/);
     expect(html).not.toContain("Attendance:");
     expect(html).not.toMatch(/marks?[:\s]+\d/i);

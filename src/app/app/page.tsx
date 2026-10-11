@@ -1,6 +1,6 @@
 import { connection } from "next/server";
 import { isDemoMode } from "@/lib/app-mode";
-import { EmptyState, UnavailableState } from "@/components/ui-states";
+import { UnavailableState } from "@/components/ui-states";
 
 // APP_DATA_MODE is a server-side runtime setting; with cacheComponents the route
 // blocks on the incoming request so the value is evaluated per request.
@@ -25,8 +25,7 @@ export default async function DashboardPage() {
       <div>
         <h1 className="text-[24px] leading-8 font-semibold text-foreground">Home</h1>
         <p className="mt-1 max-w-[65ch] text-[15px] leading-6 text-muted-foreground">
-          Your command centre for learning, schedule, tasks, academics and notices. Connected
-          academic data is not available yet — nothing below is an official record.
+          Your command centre for learning, schedule, tasks, academics and notices.
         </p>
       </div>
 
@@ -48,6 +47,7 @@ export default async function DashboardPage() {
           </h2>
           <div className="mt-3">
             <UnavailableState
+              label="Planned"
               title="Learning tools are not implemented yet"
               description="Notebooks, study chat, quizzes and flashcards will appear here once the learning workspace ships."
             />
@@ -77,9 +77,10 @@ export default async function DashboardPage() {
             Personal tasks
           </h2>
           <div className="mt-3">
-            <EmptyState
-              title="No personal tasks yet"
-              description="Create tasks to track deadlines and study plans. Personal tasks stay separate from official college records."
+            <UnavailableState
+              label="Planned"
+              title="Personal tasks are not implemented yet"
+              description="Task creation will appear here once this feature ships. Personal tasks will stay separate from official college records."
             />
           </div>
         </section>
