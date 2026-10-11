@@ -1,6 +1,6 @@
 # Information Architecture and Route Map
 
-**Status:** Draft · 2026-10-10 · **Revision:** 0.2 (P0/P1 route separation)
+**Status:** Draft · 2026-10-11 · **Revision:** 0.3 (`/app` dashboard shell implemented; other P0 routes remain planned)
 
 ## 1. Navigation principles
 
@@ -40,22 +40,22 @@ Public/auth:
 - `/privacy` and `/help` as content becomes approved
 
 Student:
-- `/app` — command centre
-- `/app/learn` — learning home
-- `/app/learn/notebooks`
-- `/app/learn/notebooks/[notebookId]`
-- `/app/learn/chat/[conversationId]`
-- `/app/learn/quizzes/[quizId]`
-- `/app/academics`
-- `/app/academics/attendance`
-- `/app/academics/assessments`
-- `/app/academics/assignments`
-- `/app/academics/results`
-- `/app/calendar`
-- `/app/tasks`
-- `/app/notices`
-- `/app/profile`
-- `/app/settings`
+- `/app` — command centre (**dashboard shell implemented**: sidebar/mobile navigation, Home active; learning, schedule, tasks, academics and notices sections render honest unavailable/empty states until connected. Other routes below remain planned.)
+- `/app/learn` — learning home (**planned**)
+- `/app/learn/notebooks` (**planned**)
+- `/app/learn/notebooks/[notebookId]` (**planned**)
+- `/app/learn/chat/[conversationId]` (**planned**)
+- `/app/learn/quizzes/[quizId]` (**planned**)
+- `/app/academics` (**planned**)
+- `/app/academics/attendance` (**planned**)
+- `/app/academics/assessments` (**planned**)
+- `/app/academics/assignments` (**planned**)
+- `/app/academics/results` (**planned**)
+- `/app/calendar` (**planned**)
+- `/app/tasks` (**planned**)
+- `/app/notices` (**planned**)
+- `/app/profile` (**planned**)
+- `/app/settings` (**planned**)
 
 Academic routes in P0 render demo data with a persistent demo label; they are read-only.
 

@@ -17,6 +17,7 @@ Test user-visible behavior and security boundaries, not only implementation deta
 - Zod schemas for forms, API payloads and GenUI outputs.
 - Permission predicates and state-transition functions, including every cell of the `08` §3 matrix.
 - Notice deduplication/provenance state transitions (`unreviewed → reviewed → approved_for_display → approved_for_rule_engine`, `rejected`, `superseded`).
+- **Implemented so far (dashboard shell):** `isDemoMode` exact-match semantics; landing page demo banner + always-visible not-connected notice across demo/production/missing/invalid modes; dashboard nav (brand, P0 labels, `/app` active via `aria-current`, planned items non-interactive, accessible mobile `<details>` disclosure); dashboard page title/sections with honest unavailable/empty states and no fabricated values; UI state primitives (error retry only when an action exists).
 
 ### Integration tests
 - Database constraints and RLS policies.
