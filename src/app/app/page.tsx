@@ -1,3 +1,5 @@
+import type { LucideIcon } from "lucide-react";
+import { BarChart3, Bell, BookOpen, CalendarDays, ListTodo } from "lucide-react";
 import { connection } from "next/server";
 import { isDemoMode } from "@/lib/app-mode";
 import { UnavailableState } from "@/components/ui-states";
@@ -5,6 +7,74 @@ import { UnavailableState } from "@/components/ui-states";
 // APP_DATA_MODE is a server-side runtime setting; with cacheComponents the route
 // blocks on the incoming request so the value is evaluated per request.
 export const instant = false;
+
+function SectionHeader({
+  id,
+  icon: Icon,
+  title,
+  description,
+}: {
+  id: string;
+  icon: LucideIcon;
+  title: string;
+  description: string;
+}) {
+  return (
+    <div className="flex items-start gap-3">
+      <span
+        aria-hidden="true"
+        className="flex size-9 shrink-0 items-center justify-center rounded-[var(--radius-md)] bg-secondary text-primary"
+      >
+        <Icon className="size-4.5" />
+      </span>
+      <div className="min-w-0">
+        <h2 id={id} className="text-[18px] leading-7 font-semibold text-foreground">
+          {title}
+        </h2>
+        <p className="mt-0.5 text-[13px] leading-5 text-muted-foreground">{description}</p>
+      </div>
+    </div>
+  );
+}
+
+type DashboardSectionProps = {
+  id: string;
+  icon: LucideIcon;
+  title: string;
+  description: string;
+  stateLabel: string;
+  stateTitle: string;
+  stateDescription: string;
+  className?: string;
+};
+
+function DashboardSection({
+  id,
+  icon,
+  title,
+  description,
+  stateLabel,
+  stateTitle,
+  stateDescription,
+  className,
+}: DashboardSectionProps) {
+  return (
+    <section
+      aria-labelledby={id}
+      className={`rounded-[var(--radius-md)] border border-border bg-surface p-5 shadow-[var(--shadow-sm)] ${className ?? ""}`}
+    >
+      <SectionHeader id={id} icon={icon} title={title} description={description} />
+      <div className="mt-4">
+        <UnavailableState
+          label={stateLabel}
+          title={stateTitle}
+          description={stateDescription}
+          icon={icon}
+        />
+      </div>
+    </section>
+  );
+}
 
 export default async function DashboardPage() {
   await connection();
@@ -15,7 +85,7 @@ export default async function DashboardPage() {
       {demoMode && (
         <div
           role="status"
-          className="rounded-[var(--radius-md)] border border-info bg-info-surface px-4 py-3 text-[13px] leading-5 font-medium text-info-text"
+          className="rounded-[var(--radius-md)] border border-border bg-info-surface px-4 py-3 text-[13px] leading-5 font-medium text-info-text"
         >
           Demo environment — clearly labelled synthetic data only. No official academic records are
           connected.
@@ -23,7 +93,7 @@ export default async function DashboardPage() {
       )}
 
       <div>
-        <h1 className="text-[24px] leading-8 font-semibold text-foreground">Home</h1>
+        <h1 className="text-[24px] leading-8 font-semibold tracking-tight text-foreground">Home</h1>
         <p className="mt-1 max-w-[65ch] text-[15px] leading-6 text-muted-foreground">
           Your command centre for learning, schedule, tasks, academics and notices.
         </p>
@@ -38,85 +108,56 @@ export default async function DashboardPage() {
       </div>
 
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-        <section
-          aria-labelledby="section-learning"
-          className="rounded-[var(--radius-md)] border border-border bg-surface p-4"
-        >
-          <h2 id="section-learning" className="text-[18px] leading-7 font-semibold text-foreground">
-            Learning workspace
-          </h2>
-          <div className="mt-3">
-            <UnavailableState
-              label="Planned"
-              title="Learning tools are not implemented yet"
-              description="Notebooks, study chat, quizzes and flashcards will appear here once the learning workspace ships."
-            />
-          </div>
-        </section>
+        <DashboardSection
+          id="section-learning"
+          icon={BookOpen}
+          title="Learning workspace"
+          description="Notebooks, study chat, quizzes and flashcards."
+          stateLabel="Planned"
+          stateTitle="Learning tools are not implemented yet"
+          stateDescription="Notebooks, study chat, quizzes and flashcards will appear here once the learning workspace ships."
+        />
 
-        <section
-          aria-labelledby="section-schedule"
-          className="rounded-[var(--radius-md)] border border-border bg-surface p-4"
-        >
-          <h2 id="section-schedule" className="text-[18px] leading-7 font-semibold text-foreground">
-            Calendar &amp; upcoming schedule
-          </h2>
-          <div className="mt-3">
-            <UnavailableState
-              title="Official schedule is not connected"
-              description="Classes, exams and college events will show here once an authorized timetable source is available."
-            />
-          </div>
-        </section>
+        <DashboardSection
+          id="section-schedule"
+          icon={CalendarDays}
+          title="Calendar & upcoming schedule"
+          description="Classes, exams and college events."
+          stateLabel="Not connected"
+          stateTitle="Official schedule is not connected"
+          stateDescription="Classes, exams and college events will show here once an authorized timetable source is available."
+        />
 
-        <section
-          aria-labelledby="section-tasks"
-          className="rounded-[var(--radius-md)] border border-border bg-surface p-4"
-        >
-          <h2 id="section-tasks" className="text-[18px] leading-7 font-semibold text-foreground">
-            Personal tasks
-          </h2>
-          <div className="mt-3">
-            <UnavailableState
-              label="Planned"
-              title="Personal tasks are not implemented yet"
-              description="Task creation will appear here once this feature ships. Personal tasks will stay separate from official college records."
-            />
-          </div>
-        </section>
+        <DashboardSection
+          id="section-tasks"
+          icon={ListTodo}
+          title="Personal tasks"
+          description="Deadlines and study plans, kept separate from college records."
+          stateLabel="Planned"
+          stateTitle="Personal tasks are not implemented yet"
+          stateDescription="Task creation will appear here once this feature ships. Personal tasks will stay separate from official college records."
+        />
 
-        <section
-          aria-labelledby="section-academics"
-          className="rounded-[var(--radius-md)] border border-border bg-surface p-4"
-        >
-          <h2
-            id="section-academics"
-            className="text-[18px] leading-7 font-semibold text-foreground"
-          >
-            Academic overview
-          </h2>
-          <div className="mt-3">
-            <UnavailableState
-              title="Academic data is unavailable"
-              description="Attendance, assessments and results need an authorized data source. No percentages, marks or eligibility status are shown until that source is verified."
-            />
-          </div>
-        </section>
+        <DashboardSection
+          id="section-academics"
+          icon={BarChart3}
+          title="Academic overview"
+          description="Attendance, assessments and results."
+          stateLabel="Not connected"
+          stateTitle="Academic data is unavailable"
+          stateDescription="Attendance, assessments and results need an authorized data source. No percentages, marks or eligibility status are shown until that source is verified."
+        />
 
-        <section
-          aria-labelledby="section-notices"
-          className="rounded-[var(--radius-md)] border border-border bg-surface p-4 lg:col-span-2"
-        >
-          <h2 id="section-notices" className="text-[18px] leading-7 font-semibold text-foreground">
-            Notices
-          </h2>
-          <div className="mt-3">
-            <UnavailableState
-              title="Official notice source is not connected"
-              description="College notices will appear here with source, date and applicability once a verified feed is authorized."
-            />
-          </div>
-        </section>
+        <DashboardSection
+          id="section-notices"
+          icon={Bell}
+          title="Notices"
+          description="Verified college notices with source and applicability."
+          stateLabel="Not connected"
+          stateTitle="Official notice source is not connected"
+          stateDescription="College notices will appear here with source, date and applicability once a verified feed is authorized."
+          className="lg:col-span-2"
+        />
       </div>
     </div>
   );

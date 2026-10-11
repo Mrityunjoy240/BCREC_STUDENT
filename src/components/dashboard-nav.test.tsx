@@ -10,7 +10,8 @@ function renderNav() {
 describe("DashboardNav", () => {
   it("renders the brand and every P0 navigation label", () => {
     const html = renderNav();
-    expect(html).toContain("BCREC Student Life Platform");
+    expect(html).toContain("BCREC");
+    expect(html).toContain("Student Life Platform");
     for (const item of primaryNavItems) {
       const escaped = item.label.replace(/&/g, "&amp;");
       expect(html).toContain(escaped);
@@ -37,13 +38,13 @@ describe("DashboardNav", () => {
     expect(new Set(hrefs)).toEqual(new Set(["/app"]));
   });
 
-  it("uses an accessible native disclosure for the mobile menu", () => {
+  it("uses an accessible disclosure for the mobile menu with a labelled desktop nav", () => {
     const html = renderNav();
     expect(html).toContain("<details");
     expect(html).toContain("<summary");
     expect(html).toContain("Menu");
-    const navCount = (html.match(/<nav/g) ?? []).length;
-    expect(navCount).toBe(2);
-    expect((html.match(/aria-label="Main navigation"/g) ?? []).length).toBe(2);
+    // Desktop sidebar nav is server-rendered; the mobile drawer mounts on open.
+    expect(html).toContain('aria-label="Main navigation"');
+    expect(html).toContain('aria-hidden="true"');
   });
 });

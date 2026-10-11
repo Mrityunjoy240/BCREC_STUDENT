@@ -1,7 +1,7 @@
 # Design System — Student Life Platform
 
 **Status:** Provisional product tokens proposed for owner review; validate using clickable prototypes before implementation. Not official BCREC branding until college colours/logo are verified and authorized.  
-**Date:** 2026-10-10 · **Revision:** 0.2 (concrete initial token values added)
+**Date:** 2026-10-11 · **Revision:** 0.3 (P1 premium dashboard: warm-neutral surfaces, Lucide iconography, shadcn/ui Button/Badge adapted to these tokens, `--shadow-sm`/`--shadow-md` added)
 
 ## 1. Desired character
 
