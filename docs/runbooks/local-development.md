@@ -67,6 +67,6 @@ Verified commands are used where the bootstrap/P2.0 task ran them; Docker-depend
 
 ## Remaining TODOs
 
-- Run `npx supabase start` and `npx supabase db reset` once Docker is available; execute `src/lib/auth/rls.integration.test.ts` against the local API and record results in `11-testing-and-acceptance.md` §7.
+- Run `npx supabase start` and `npx supabase db reset` once Docker is available; then export `SUPABASE_TEST_ANON_KEY` for the test process from `npx supabase status` (field `anon_key`) and execute `src/lib/auth/rls.integration.test.ts` against the local API, recording results in `11-testing-and-acceptance.md` §7. The suite has no placeholder-key fallback: a reachable API without the key fails loudly, and skipped tests are never RLS verification (see `src/lib/auth/rls-preflight.ts`).
 - Session-refresh middleware (root `proxy.ts` / middleware) and login UI land in the **next** P2 session phase — intentionally not half-configured in P2.0.
 - Playwright E2E and full integration-test commands stay **proposed** until those tasks add the suites; keep `11-testing-and-acceptance.md` §7 in sync in the same change.
