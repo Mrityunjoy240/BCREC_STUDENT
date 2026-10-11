@@ -101,16 +101,16 @@ A feature is done when:
 
 ## 7. CI quality gates
 
-Commands **verified at website bootstrap** (2026-10-11): lint, format:check, typecheck, test (Vitest starter), build, npm ci, dev. Database, integration, and E2E commands remain **proposed** until their tasks add the suites (see `docs/runbooks/local-development.md`):
+Commands **verified at website bootstrap** (2026-10-11): lint, format:check, typecheck, test (Vitest starter), build, npm ci, dev. Supabase CLI is a committed devDependency after P2.0; live database and E2E commands remain **proposed** until a Docker runtime and their suites are exercised (see `docs/runbooks/local-development.md`):
 
 1. Formatting/lint — `npm run lint` and `npm run format:check` (ESLint + Prettier) — **verified**.
 2. Type check — `npm run typecheck` (`tsc --noEmit`) — **verified**.
-3. Unit tests — `npm run test` (Vitest) — **verified** with the starter suite; grow coverage per feature.
-4. Schema/migration check or disposable-database migration test — `npx supabase db reset` against a local disposable database — **proposed** (Supabase task).
-5. Integration tests — `npm run test:integration` (Vitest + local/test database) — **proposed** (suite not yet added).
+3. Unit tests — `npm run test` (Vitest) — **verified**; now includes mocked auth-helper tests (`src/lib/auth/*.test.ts`), static migration guards (`migration-guards.test.ts`), preflight classification guards (`rls-preflight.test.ts`), and an RLS integration suite that auto-skips when the local Supabase API is unreachable (`rls.integration.test.ts`). Skipped tests are not RLS verification; a reachable API without `SUPABASE_TEST_ANON_KEY` fails the suite loudly (no placeholder-key fallback, so an invalid-key error can never masquerade as a successful RLS denial).
+4. Schema/migration check or disposable-database migration test — `npx supabase db reset` against a local disposable database — **CLI committed (P2.0)**; still **unverified** where Docker is unavailable. Static SQL guards run in unit tests; they do not replace live RLS execution.
+5. Integration tests — `npm run test:integration` (Vitest + local/test database) — **partially added (P2.0)**: `rls.integration.test.ts` runs when `npx supabase start` is up **and** `SUPABASE_TEST_ANON_KEY` is exported from `npx supabase status` (field `anon_key`); it fails loudly on a reachable API without the key and otherwise skips, reporting that only mocked/unit results are available. Dedicated `test:integration` script still **proposed**.
 6. Production build — `npm run build` — **verified**.
 7. Critical Playwright flows and authorization E2E tests — `npm run test:e2e` — **proposed** (Playwright task).
-8. Dependency/security checks supported by chosen tooling (e.g. `npm audit` plus the chosen scanner) — scanner choice **open**; note known advisories from `npm audit` at bootstrap rather than force-fixing blindly.
+8. Dependency/security checks supported by chosen tooling (e.g. `npm audit` plus the chosen scanner) — scanner choice **open**; note known advisories from `npm audit` at bootstrap rather than force-fixing blindly. P2.0 re-check: `npm audit --omit=dev` reported 0 production vulnerabilities; known dev-only `braces` advisory remains unfixable upstream.
 
 Package manager: **npm** with a committed lockfile (`package-lock.json`) — **verified**. Set branch protection when the team is ready. Never disable a failing critical test simply to merge.
 

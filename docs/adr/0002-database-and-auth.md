@@ -43,6 +43,15 @@ Trade-offs:
 - Test cross-user access, role scope and denied paths.
 - Start with synthetic data until data access is authorized; synthetic academic records stay in demo/dev environments only (see ADR 0004 and `07` §8).
 
+## Implementation note (P2.0 foundation, 2026-10-11)
+
+The P2.0 phase implemented the approved development foundation without changing this ADR's approval status for production:
+
+- Initial migration `supabase/migrations/20261011120000_initial_identity_and_audit.sql`: `profiles`, `role_assignments` (canonical 10-role enum, scoped + time-bounded, `NULLS NOT DISTINCT` uniqueness), org units, `student_records` / `staff_records` / `student_enrolments`, `audit_events`; RLS + explicit grants; auth-user provisioning trigger (no automatic roles).
+- Server helpers: `src/lib/supabase/server.ts` (anon-key, cookie-based `createServerClient`); `src/lib/auth/session.ts` (`getSessionUser`, `requireUser`); `src/lib/auth/authorize.ts` (named, fail-closed permission predicates from `docs/08`).
+- Public signup disabled in `supabase/config.toml`; seed disabled (no committed accounts). No route protection, login UI, or session-refresh middleware yet — deferred to the P2 login phase.
+- Live `supabase db reset` / RLS integration execution still requires a local Docker runtime and remains outstanding (see `11` §7).
+
 ## References
 
 - https://supabase.com/docs/guides/local-development/cli-workflows
