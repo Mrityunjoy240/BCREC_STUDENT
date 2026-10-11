@@ -35,7 +35,7 @@ describe("DashboardNav", () => {
     expect(html).not.toContain("Help &amp; Mentor");
     expect(html).not.toContain("Career &amp; Projects");
     const hrefs = [...html.matchAll(/href="([^"]+)"/g)].map((m) => m[1]);
-    expect(new Set(hrefs)).toEqual(new Set(["/app"]));
+    expect(new Set(hrefs)).toEqual(new Set(["/app", "/app/learn"]));
   });
 
   it("uses an accessible disclosure for the mobile menu with a labelled desktop nav", () => {

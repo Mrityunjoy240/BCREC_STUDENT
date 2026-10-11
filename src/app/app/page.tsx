@@ -1,5 +1,6 @@
 import type { LucideIcon } from "lucide-react";
-import { BarChart3, Bell, BookOpen, CalendarDays, ListTodo } from "lucide-react";
+import { ArrowRight, BarChart3, Bell, BookOpen, CalendarDays, ListTodo } from "lucide-react";
+import type { Metadata } from "next";
 import { connection } from "next/server";
 import { isDemoMode } from "@/lib/app-mode";
 import { UnavailableState } from "@/components/ui-states";
@@ -7,6 +8,10 @@ import { UnavailableState } from "@/components/ui-states";
 // APP_DATA_MODE is a server-side runtime setting; with cacheComponents the route
 // blocks on the incoming request so the value is evaluated per request.
 export const instant = false;
+
+export const metadata: Metadata = {
+  title: "Home",
+};
 
 function SectionHeader({
   id,
@@ -76,6 +81,45 @@ function DashboardSection({
   );
 }
 
+function LearningGateway() {
+  return (
+    <section
+      aria-labelledby="section-gateway"
+      className="rounded-[var(--radius-md)] border border-border bg-surface p-6 shadow-[var(--shadow-sm)]"
+    >
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+        <div className="flex items-start gap-4">
+          <span
+            aria-hidden="true"
+            className="flex size-11 shrink-0 items-center justify-center rounded-[var(--radius-md)] bg-primary text-primary-foreground"
+          >
+            <BookOpen className="size-5" />
+          </span>
+          <div className="min-w-0">
+            <h2
+              id="section-gateway"
+              className="text-[18px] leading-7 font-semibold text-foreground"
+            >
+              Learning Workspace
+            </h2>
+            <p className="mt-1 max-w-[60ch] text-[15px] leading-6 text-muted-foreground">
+              Your study hub for materials, AI assistance and practice. Tools appear here as they
+              ship.
+            </p>
+          </div>
+        </div>
+        <a
+          href="/app/learn"
+          className="inline-flex h-9 shrink-0 items-center gap-1.5 self-start rounded-[var(--radius-md)] bg-primary px-4 text-[13px] leading-5 font-medium text-primary-foreground transition-colors duration-[120ms] ease-in-out hover:bg-primary-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--focus-ring)] sm:self-auto"
+        >
+          Open workspace
+          <ArrowRight aria-hidden="true" className="size-4" />
+        </a>
+      </div>
+    </section>
+  );
+}
+
 export default async function DashboardPage() {
   await connection();
   const demoMode = isDemoMode(process.env.APP_DATA_MODE);
@@ -107,17 +151,9 @@ export default async function DashboardPage() {
         official notices are not integrated; missing data is shown as unavailable, never simulated.
       </div>
 
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-        <DashboardSection
-          id="section-learning"
-          icon={BookOpen}
-          title="Learning workspace"
-          description="Notebooks, study chat, quizzes and flashcards."
-          stateLabel="Planned"
-          stateTitle="Learning tools are not implemented yet"
-          stateDescription="Notebooks, study chat, quizzes and flashcards will appear here once the learning workspace ships."
-        />
+      <LearningGateway />
 
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
         <DashboardSection
           id="section-schedule"
           icon={CalendarDays}
@@ -156,7 +192,6 @@ export default async function DashboardPage() {
           stateLabel="Not connected"
           stateTitle="Official notice source is not connected"
           stateDescription="College notices will appear here with source, date and applicability once a verified feed is authorized."
-          className="lg:col-span-2"
         />
       </div>
     </div>

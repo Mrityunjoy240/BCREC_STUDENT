@@ -31,44 +31,68 @@ function NavIcon({ item, className }: { item: NavItem; className?: string }) {
   return <Icon aria-hidden="true" className={cn("size-5 shrink-0", className)} />;
 }
 
-function NavList({ currentPath }: { currentPath: string }) {
+function NavItemRow({ item, currentPath }: { item: NavItem; currentPath: string }) {
+  const isActive = item.href !== null && item.href === currentPath;
+  if (item.href !== null) {
+    return (
+      <a
+        href={item.href}
+        aria-current={isActive ? "page" : undefined}
+        className={cn(
+          "flex h-9 items-center gap-3 rounded-[var(--radius-md)] px-3 text-[15px] leading-6 transition-colors duration-[120ms] ease-in-out",
+          isActive
+            ? "border-l-[3px] border-primary bg-secondary pl-[9px] font-medium text-primary"
+            : "border-l-[3px] border-transparent pl-[9px] text-foreground hover:bg-surface-muted",
+        )}
+      >
+        <NavIcon item={item} className={isActive ? "text-primary" : "text-muted-foreground"} />
+        {item.label}
+      </a>
+    );
+  }
   return (
-    <ul className="flex flex-col gap-0.5">
-      {primaryNavItems.map((item) => {
-        const isActive = item.href !== null && item.href === currentPath;
-        return (
-          <li key={item.label}>
-            {item.href !== null ? (
-              <a
-                href={item.href}
-                aria-current={isActive ? "page" : undefined}
-                className={cn(
-                  "flex h-9 items-center gap-3 rounded-[var(--radius-md)] px-3 text-[15px] leading-6 transition-colors duration-[120ms] ease-in-out",
-                  isActive
-                    ? "border-l-[3px] border-primary bg-secondary pl-[9px] font-medium text-primary"
-                    : "border-l-[3px] border-transparent pl-[9px] text-foreground hover:bg-surface-muted",
-                )}
-              >
-                <NavIcon
-                  item={item}
-                  className={isActive ? "text-primary" : "text-muted-foreground"}
-                />
-                {item.label}
-              </a>
-            ) : (
-              <span
-                aria-disabled="true"
-                className="flex h-9 items-center gap-3 rounded-[var(--radius-md)] border-l-[3px] border-transparent pl-[9px] text-[15px] leading-6 text-muted-foreground"
-              >
-                <NavIcon item={item} className="text-muted-foreground/70" />
-                <span className="min-w-0 flex-1">{item.label}</span>
-                <Badge variant="secondary">Planned</Badge>
-              </span>
-            )}
-          </li>
-        );
-      })}
-    </ul>
+    <span
+      aria-disabled="true"
+      className="flex h-9 items-center gap-3 rounded-[var(--radius-md)] border-l-[3px] border-transparent pl-[9px] text-[15px] leading-6 text-muted-foreground"
+    >
+      <NavIcon item={item} className="text-muted-foreground/70" />
+      <span className="min-w-0 flex-1">{item.label}</span>
+      <Badge variant="secondary">Planned</Badge>
+    </span>
+  );
+}
+
+function NavList({ currentPath }: { currentPath: string }) {
+  const workspaceItems = primaryNavItems.filter((item) => item.group === "workspace");
+  const plannedItems = primaryNavItems.filter((item) => item.group === "planned");
+
+  return (
+    <div className="flex flex-col gap-6">
+      <div>
+        <p className="px-3 pb-2 text-xs leading-4 font-medium tracking-wide text-muted-foreground uppercase">
+          Workspace
+        </p>
+        <ul className="flex flex-col gap-0.5">
+          {workspaceItems.map((item) => (
+            <li key={item.label}>
+              <NavItemRow item={item} currentPath={currentPath} />
+            </li>
+          ))}
+        </ul>
+      </div>
+      <div>
+        <p className="px-3 pb-2 text-xs leading-4 font-medium tracking-wide text-muted-foreground uppercase">
+          Planned
+        </p>
+        <ul className="flex flex-col gap-0.5">
+          {plannedItems.map((item) => (
+            <li key={item.label}>
+              <NavItemRow item={item} currentPath={currentPath} />
+            </li>
+          ))}
+        </ul>
+      </div>
+    </div>
   );
 }
 
@@ -105,9 +129,6 @@ export function DashboardNav({ currentPath }: { currentPath: string }) {
           <BrandBlock />
         </div>
         <div className="flex-1 overflow-y-auto px-3 py-4">
-          <p className="px-3 pb-2 text-xs leading-4 font-medium tracking-wide text-muted-foreground uppercase">
-            Workspace
-          </p>
           <NavList currentPath={currentPath} />
         </div>
       </nav>
@@ -135,6 +156,7 @@ function MobileDrawer({ currentPath }: { currentPath: string }) {
       className="group"
     >
       <summary
+        aria-label={open ? "Close menu" : "Open menu"}
         onClick={(event) => {
           event.preventDefault();
           setOpen((value) => !value);
@@ -158,7 +180,7 @@ function MobileDrawer({ currentPath }: { currentPath: string }) {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -4 }}
             transition={{ duration: 0.18, ease: "easeOut" }}
-            className="fixed top-[57px] right-0 left-0 border-b border-border bg-surface px-3 py-4 shadow-[var(--shadow-md)]"
+            className="fixed top-[57px] right-0 left-0 max-h-[calc(100dvh-57px)] overflow-y-auto border-b border-border bg-surface px-3 py-4 shadow-[var(--shadow-md)]"
           >
             <NavList currentPath={currentPath} />
           </motion.nav>
